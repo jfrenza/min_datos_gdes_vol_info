@@ -2,15 +2,14 @@ import boto3
 import botocore
 
 # Replace these with your own AWS credentials and bucket name
-aws_access_key_id = 'YOUR_ACCESS_KEY_ID'
-aws_secret_access_key = 'YOUR_SECRET_ACCESS_KEY'
-bucket_name = 'your-s3-bucket-name'
+
+bucket_name = 'mindatos-project'
 
 # Initialize the S3 client
 s3 = boto3.client('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
 
 # Specify the file you want to download from the bucket
-file_key = 'path/to/your/file.txt'
+file_key = f'{bucket_name}/energy-data/'
 
 # Specify the local file path where you want to save the downloaded file
 local_file_path = 'local/path/to/save/file.txt'
