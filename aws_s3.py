@@ -1,25 +1,68 @@
 import boto3
-import botocore
+import os
+from typing import List
 
-# Replace these with your own AWS credentials and bucket name
 
-bucket_name = 'mindatos-project'
+def upload_file(file_name, bucket, object_name=None):
+    """Upload a file to an S3 bucket
 
-# Initialize the S3 client
-s3 = boto3.client('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+    :param file_name: File to upload
+    :param bucket: Bucket to upload to
+    :param object_name: S3 object name. If not specified then file_name is used
+    """
 
-# Specify the file you want to download from the bucket
-file_key = f'{bucket_name}/energy-data/'
+    # If S3 object_name was not specified, use file_name
+    if object_name is None:
+        object_name = os.path.basename(file_name)
 
-# Specify the local file path where you want to save the downloaded file
-local_file_path = 'local/path/to/save/file.txt'
+    # Upload the file
+    s3_client = boto3.client('s3')
+    response = s3_client.upload_file(file_name, bucket, object_name)
 
-try:
-    # Download the file from the S3 bucket
-    s3.download_file(bucket_name, file_key, local_file_path)
-    print(f"File downloaded successfully to {local_file_path}")
-except botocore.exceptions.ClientError as e:
-    if e.response['Error']['Code'] == '404':
-        print("The file does not exist in the bucket.")
-    else:
-        print(f"An error occurred: {str(e)}")
+
+def download_file(local_file_path, bucket, object_name):
+    """Download a file from an S3 bucket
+
+    :param local_file_path: Local path to save file
+    :param bucket: Bucket to download from
+    :param object_name: S3 object name
+    """
+
+    # Download the file
+    s3_client = boto3.client('s3')
+    response = s3_client.download_file(bucket, object_name, local_file_path)
+
+
+def list_objects(bucket, prefix) -> List[str]:
+    """List objects in an S3 bucket
+
+    :param bucket: Bucket to list objects from
+    :param prefix: Prefix to filter objects by
+    :return: List of object names
+    """
+
+    # Retrieve the list of bucket objects
+    s3_client = boto3.client('s3')
+    response = s3_client.list_objects_v2(Bucket=bucket, Prefix=prefix)
+
+    # Iterate through object list and add to list
+    object_list = []
+    for obj in response['Contents']:
+        object_list.append(obj['Key'])
+
+    return object_list
+
+
+def delete_objects(bucket, object_names):
+    """Delete multiple objects from an S3 bucket
+    
+    :param bucket: Bucket to delete objects from
+    :param object_names: List of S3 object names
+    """
+
+    # Prepare the format for the delete operation
+    objects = [{'Key': obj_name} for obj_name in object_names]
+
+    # Delete the objects
+    s3_client = boto3.client('s3')
+    response = s3_client.delete_objects(Bucket=bucket, Delete={'Objects': objects})
