@@ -18,4 +18,3 @@ for object_key in object_keys:
         # Download the object to the local file path
         aws_s3.download_file(local_file_path, bucket_name, object_key)
         data_frames[object_key] = pd.read_csv('/tmp/data', sep = ';')
-
